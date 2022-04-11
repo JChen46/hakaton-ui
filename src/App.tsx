@@ -6,41 +6,31 @@ import {
 } from '@react-three/drei'
 import React, { useRef, useState, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { DoubleSide } from 'three'
-import { Position } from './classes/Position'
+import { TileData } from './classes/TileData'
+import Tile from './components/Tile'
 
 import './style.css'
 
 function ToolTip() {
     return (
-        <Html center position={[0, 0, -0.5]}>
+        <Html center position={[0, 0, 0]}>
             <p>Hakaton!</p>
         </Html>
     )
 }
 
-function Map() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const ref = useRef<THREE.Mesh>(null!)
-    const [position, setPosition] = useState([0, 0, 0])
-    useFrame(() => (ref.current.rotation.z += 0.001))
-    console.log(position)
+// returns a list of the 2D array of Tiles that make up the Map
+function Map(props: { tileDataList: TileData[]; handleSelection: any }) {
+    console.log('tileDataList: ', props.tileDataList)
     return (
         <>
-            <mesh
-                ref={ref}
-                rotation={[Math.PI / 2, 0, 0]}
-                scale={[1, 1, 1]}
-                onPointerDown={() => {
-                    console.log('aaaa', position);
-                    setPosition(position.map((value) => value + 1))
-                    }
-                }
-                position={position as [number, number, number]}
-            >
-                <boxBufferGeometry args={[10, 10]} />
-                <meshBasicMaterial color="orange" side={DoubleSide} />
-            </mesh>
+            {props.tileDataList.map((tileData: TileData) => (
+                <Tile
+                    key={tileData.id}
+                    tileData={tileData}
+                    handleSelection={props.handleSelection}
+                />
+            ))}
         </>
     )
 }
@@ -48,20 +38,32 @@ function Map() {
 // TODO: Make a tile component that uses custom react hooks that are also clickable
 // Consider using zustand or Recoil state management libraries to handle metadata of each tile
 
-function Environment() {
-    // function ExecuteSomething() {
-    //     console.log('Executed Something!')
-    //     setPosition(position.map((value) => value + 1))
+function Environment(initialTileDataList: any) {
+    // props: {initialTileDataList: TileData[]}) {
+    console.log('environment ', initialTileDataList.initialTileDataList)
+    const [tileDataList, setTileDataList] = useState(
+        initialTileDataList.initialTileDataList
+    )
+    // const [selectedTile, setSelectedTile] = useState()
 
-    // }
-
-    const test = new Position(10, 10, 10);
+    function handleSelection(tile: number) {
+        setTileDataList((currTileData: TileData[]) => {
+            return currTileData.map((data) => {
+                console.log('handleSelection data: ', data)
+                console.log('handleSelection tile: ', tile)
+                if (data.id === tile) {
+                    return data.color === 'orange'
+                        ? { ...data, color: 'green' }
+                        : { ...data, color: 'orange' }
+                }
+                return data
+            })
+        })
+    }
 
     return (
         <>
-            <button type="button" >
-                Click me!
-            </button>
+            <button type="button">Click me!</button>
             <Canvas>
                 <OrbitControls />
                 <Stars />
@@ -69,16 +71,22 @@ function Environment() {
                 <ToolTip />
                 <ambientLight intensity={0.5} />
                 <pointLight position={[10, 10, 10]} />
-                <PerspectiveCamera
-                    position={test.getPosition() as [number, number, number]}
-                    makeDefault
+                <PerspectiveCamera position={[5, 5, 5]} makeDefault />
+                <Map
+                    tileDataList={tileDataList}
+                    handleSelection={handleSelection}
                 />
-                <Map />
             </Canvas>
         </>
     )
 }
 
 export default function App() {
-    return <Environment />
+    const initialTileDataList = [
+        new TileData(1, -0.5, 0, -0.5),
+        new TileData(2, -0.5, 0, 0.5),
+        new TileData(3, 0.5, 0, -0.5),
+        new TileData(4, 0.5, 0, 0.5),
+    ]
+    return <Environment initialTileDataList={initialTileDataList} />
 }
