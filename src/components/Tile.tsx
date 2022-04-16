@@ -6,11 +6,25 @@ import { TileData } from '../classes/TileData'
 
 // type selectionFunction = (tile: TileData) => TileData;
 
-function Tile(props: { tileData: TileData; handleSelection: any }) {
+function Tile(props: {
+    tileData: TileData
+    handleSelection: (id: number) => void
+}) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const ref = useRef<THREE.Mesh>(null!)
-    // useFrame(() => (ref.current.rotation.z += 0.001))
-    console.log('inside Tile', props.tileData)
+
+    useFrame(() => {
+        // ref.current.rotation.z += (Math.random() - 0.5) * 0.2
+        // ref.current.rotation.y += (Math.random() - 0.5) * 0.2
+        // ref.current.rotation.x += (Math.random() - 0.5) * 0.2
+        // ref.current.position.y +=
+        //     ref.current.position.y <= 0
+        //         ? Math.random() * 0.05
+        //         : ref.current.position.y >= 1
+        //         ? Math.random() * -0.05
+        //         : Math.random() * 0.05
+    })
+    // console.log('inside Tile', props.tileData)
 
     function selectTile() {
         props.handleSelection(props.tileData.id)
@@ -39,7 +53,7 @@ function Tile(props: { tileData: TileData; handleSelection: any }) {
                 <Edges
                     scale={1}
                     threshold={15} // Display edges only when the angle between two faces exceeds this value (default=15 degrees)
-                    color="white"
+                    color="black"
                 />
             </mesh>
         </>

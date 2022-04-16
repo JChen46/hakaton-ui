@@ -4,12 +4,15 @@ import {
     PerspectiveCamera,
     Stars,
 } from '@react-three/drei'
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { TileData } from './classes/TileData'
 import Tile from './components/Tile'
 
 import './style.css'
+import { callGetTestEndpoint } from './apiCalls/testEndpoint'
+
+const MAP_WIDTH = 7
 
 function ToolTip() {
     return (
@@ -20,8 +23,10 @@ function ToolTip() {
 }
 
 // returns a list of the 2D array of Tiles that make up the Map
-function Map(props: { tileDataList: TileData[]; handleSelection: any }) {
-    console.log('tileDataList: ', props.tileDataList)
+function Map(props: {
+    tileDataList: TileData[]
+    handleSelection: (tile: number) => void
+}) {
     return (
         <>
             {props.tileDataList.map((tileData: TileData) => (
@@ -37,21 +42,27 @@ function Map(props: { tileDataList: TileData[]; handleSelection: any }) {
 
 // TODO: Make a tile component that uses custom react hooks that are also clickable
 // Consider using zustand or Recoil state management libraries to handle metadata of each tile
+// Currently it renders all tiles when one is clicked, is there a way to only render the updated one using useEffect?
+// Make API calls (eventually to colyseus api)
 
-function Environment(initialTileDataList: any) {
-    // props: {initialTileDataList: TileData[]}) {
-    console.log('environment ', initialTileDataList.initialTileDataList)
-    const [tileDataList, setTileDataList] = useState(
-        initialTileDataList.initialTileDataList
-    )
-    // const [selectedTile, setSelectedTile] = useState()
+function Environment(props: { initialTileDataList: TileData[] }) {
+    const [tileDataList, setTileDataList] = useState(props.initialTileDataList)
 
-    function handleSelection(tile: number) {
+    useEffect(() => {
+        // console.log('omg data color')
+    }, [tileDataList])
+
+    function handleSelection(tileId: number) {
         setTileDataList((currTileData: TileData[]) => {
             return currTileData.map((data) => {
-                console.log('handleSelection data: ', data)
-                console.log('handleSelection tile: ', tile)
-                if (data.id === tile) {
+                // console.log('handleSelection data: ', data)
+                // console.log('handleSelection tile: ', tileId)
+                if (data.id === tileId) {
+                    // data.setTileDataColor(
+                    //     data.color === 'orange' ? 'green' : 'orange'
+                    // )
+                    // console.log('the new colors is: ', data.color)
+                    // return data
                     return data.color === 'orange'
                         ? { ...data, color: 'green' }
                         : { ...data, color: 'orange' }
@@ -59,11 +70,26 @@ function Environment(initialTileDataList: any) {
                 return data
             })
         })
+
+        //testCallApi from tile click
+        callFetchApi()
+    }
+
+    function callFetchApi() {
+        callGetTestEndpoint()
+            .then((result) => {
+                console.log(result)
+            })
+            .catch((e) => {
+                console.log(`error: ${e}`)
+            })
     }
 
     return (
         <>
-            <button type="button">Click me!</button>
+            <button type="button" onClick={callFetchApi}>
+                Click me!
+            </button>
             <Canvas>
                 <OrbitControls />
                 <Stars />
@@ -82,11 +108,31 @@ function Environment(initialTileDataList: any) {
 }
 
 export default function App() {
-    const initialTileDataList = [
-        new TileData(1, -0.5, 0, -0.5),
-        new TileData(2, -0.5, 0, 0.5),
-        new TileData(3, 0.5, 0, -0.5),
-        new TileData(4, 0.5, 0, 0.5),
-    ]
+    // const initialTileDataList = [
+    //     new TileData(1, -0.5, 0, -0.5),
+    //     new TileData(2, -0.5, 0, 0.5),
+    //     new TileData(3, 0.5, 0, -0.5),
+    //     new TileData(4, 0.5, 0, 0.5),
+    // ]
+    const tileOffset = MAP_WIDTH / 2 - 0.5
+    const initialTileDataList = Array(MAP_WIDTH)
+        .fill(0)
+        .reduce(
+            (acc, _, i) =>
+                acc.concat(
+                    Array(MAP_WIDTH)
+                        .fill(0)
+                        .map(
+                            (_, j) =>
+                                new TileData(
+                                    10 * i + j,
+                                    i - tileOffset,
+                                    0,
+                                    j - tileOffset
+                                )
+                        )
+                ),
+            []
+        )
     return <Environment initialTileDataList={initialTileDataList} />
 }

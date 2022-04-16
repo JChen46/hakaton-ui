@@ -13,21 +13,21 @@ export class TileData {
         this.color = color || "orange";
     }
 
-    getTileDataPosition() {
-        return [this.x, this.y, this.z];
-    }
+    // getTileDataPosition() {
+    //     return [this.x, this.y, this.z];
+    // }
 
-    setTileDataPosition(x: number, y: number, z: number) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
+    // setTileDataPosition(x: number, y: number, z: number) {
+    //     this.x = x;
+    //     this.y = y;
+    //     this.z = z;
+    // }
 
-    getTileDataColor() {
-        return this.color;
-    }
+    // getTileDataColor() {
+    //     return this.color;
+    // }
 
-    setTileDataColor(newColor: string) {
-        this.color = newColor;
-    }
+    // setTileDataColor(newColor: string) {
+    //     this.color = newColor;
+    // }
 }
